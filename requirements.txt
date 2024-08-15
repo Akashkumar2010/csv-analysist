@@ -1,0 +1,7 @@
+google-generativeai
+pandas 
+pandasai
+matplotlib
+seaborn
+streamlit
+langchain-groq
