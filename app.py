@@ -3,7 +3,8 @@ import os
 import streamlit as st
 import google.generativeai as genai
 import matplotlib.pyplot as plt
-import seaborn as snsimport pandas as pd
+import seaborn as sns
+import pandas as pd
 import os
 import streamlit as st
 import google.generativeai as genai
