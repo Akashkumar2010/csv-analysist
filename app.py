@@ -13,7 +13,7 @@ import seaborn as sns
 from io import BytesIO
 
 # Initialize the Gemini API client
-genai.configure(api_key="YOUR_API_KEY")  # Replace with your actual API key
+genai.configure(api_key="AIzaSyDFqr07uAzPAB2ahk2ZmnahwX36x1E8gIA")  # Replace with your actual API key
 
 def load_data(uploaded_file) -> pd.DataFrame:
     if uploaded_file is not None:
