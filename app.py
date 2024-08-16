@@ -51,7 +51,7 @@ def create_plot(df, plot_type, x_col=None, y_col=None):
     plt.figure(figsize=(10, 6))
     
     num_cols = df.select_dtypes(include=['number']).columns
-    cat_cols = df.select_dtypes(include(['object']).columns
+    cat_cols = df.select_dtypes(include=['object']).columns
     
     if plot_type == "scatter":
         if x_col and y_col:
