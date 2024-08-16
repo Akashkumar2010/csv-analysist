@@ -19,27 +19,45 @@ def generate_description(query):
     response = genai.generate_text(prompt=query)
     return response.result
 
-def generate_hint(df):
-    hints = []
+def suggest_explorations(df):
+    suggestions = []
+    
     if df is not None:
+        # Check for numerical and categorical columns
         num_cols = df.select_dtypes(include=['number']).columns
         cat_cols = df.select_dtypes(include=['object']).columns
 
+        # Basic exploration suggestions
         if num_cols.size > 0:
-            hints.append("Explore correlations between numerical features.")
-            hints.append("Visualize distributions of numerical columns.")
+            suggestions.append("Visualize distributions of numerical columns using histograms or box plots.")
+            suggestions.append("Check for correlations between numerical features using a heatmap.")
         
         if cat_cols.size > 0:
-            hints.append("Check the distribution of categorical features.")
-            hints.append("Analyze relations between categorical and numerical features.")
+            suggestions.append("Explore the distribution of categorical features with bar plots.")
+            suggestions.append("Analyze the relationship between categorical and numerical features with group-by operations.")
 
         if num_cols.size > 1:
-            hints.append("Create scatter plots to examine relationships between numerical columns.")
+            suggestions.append("Scatter plots can help explore relationships between numerical columns.")
 
         if cat_cols.size > 0 and num_cols.size > 0:
-            hints.append("Use bar plots to compare categories.")
-    
-    return hints
+            suggestions.append("Create bar plots to compare categories across numerical values.")
+
+        # Additional advanced suggestions
+        if num_cols.size > 0 and df[num_cols].isnull().any().any():
+            suggestions.append("Consider handling missing values in numerical columns.")
+        
+        if cat_cols.size > 0 and df[cat_cols].isnull().any().any():
+            suggestions.append("Consider handling missing values in categorical columns.")
+        
+        if df.duplicated().sum() > 0:
+            suggestions.append(f"Found {df.duplicated().sum()} duplicated rows, consider removing them.")
+        
+        # Unique value checks
+        for col in df.columns:
+            if df[col].nunique() == df.shape[0]:
+                suggestions.append(f"The column '{col}' has unique values for all rows, it might be an identifier.")
+        
+    return suggestions
 
 def create_plot(df, plot_type, x_col=None, y_col=None):
     plt.figure(figsize=(10, 6))
@@ -83,11 +101,11 @@ if uploaded_file is not None:
         st.subheader("Initial Data Description")
         st.write(initial_description)
 
-        # Suggested questions and hints
+        # Automatically generated exploration suggestions
         st.subheader("Suggested Explorations")
-        hints = generate_hint(df)
-        for hint in hints:
-            st.write(f"- {hint}")
+        suggestions = suggest_explorations(df)
+        for suggestion in suggestions:
+            st.write(f"- {suggestion}")
 
         # Chat interface for queries and visualizations
         st.subheader("Chat with Your Data")
