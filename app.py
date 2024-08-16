@@ -7,7 +7,7 @@ import seaborn as sns
 from io import BytesIO
 
 # Initialize the Gemini API client
-genai.configure(api_key="AIzaSyDFqr07uAzPAB2ahk2ZmnahwX36x1E8gIA")
+genai.configure(api_key="YOUR_API_KEY")
 
 def load_data(uploaded_file) -> pd.DataFrame:
     if uploaded_file is not None:
@@ -86,43 +86,46 @@ st.write("# Chat with CSV Data 🦙")
 # File uploader for CSV
 uploaded_file = st.file_uploader("Upload a CSV file", type="csv")
 
+# Initialize chat history
+if "history" not in st.session_state:
+    st.session_state.history = []
+
 if uploaded_file is not None:
     df = load_data(uploaded_file)
     st.write("### Data Preview:")
     st.write(df)
     
     if not df.empty:
-        # Generate an initial description of the CSV file
-        st.write("### Initial Data Description:")
-        initial_query = "Describe what this CSV file represents."
-        initial_description = generate_description(initial_query)
-        st.write(initial_description)
-
         # Provide hints for user queries
         st.write("### Suggested Questions:")
         hints = generate_hint(df)
         for hint in hints:
             st.write(f"- {hint}")
     
-        # Form to capture user input and submit
-        with st.form(key="query_form"):
-            query = st.text_area("🗣️ Ask a specific question or request a visualization", key="query_input")
-            plot_type = st.selectbox("Choose plot type", ["scatter", "line", "bar", "histogram"])
-            x_col = st.selectbox("Select X column", options=[None] + df.columns.tolist())
-            y_col = st.selectbox("Select Y column", options=[None] + df.columns.tolist())
-            submit_button = st.form_submit_button(label="Generate")
+        # Chat box to capture user input and display conversation
+        query = st.text_input("🗣️ Ask a question or request analysis:", key="query_input")
 
-        # Process the query when the form is submitted
-        if submit_button and query:
+        if query:
             with st.spinner("Generating response..."):
+                # Store user input in chat history
+                st.session_state.history.append({"role": "user", "content": query})
+                
+                # Generate response from AI
                 description = generate_description(query)
-                st.write("### AI-Generated Description:")
-                st.write(description)
+                st.session_state.history.append({"role": "ai", "content": description})
 
-                # Generate and display the plot
-                st.write("### Visualization:")
-                plot_image = create_plot(df, plot_type, x_col, y_col)
-                if plot_image:
-                    st.image(plot_image)
-
-
+        # Display chat history
+        for message in st.session_state.history:
+            if message["role"] == "user":
+                st.write(f"**You:** {message['content']}")
+            else:
+                st.write(f"**AI:** {message['content']}")
+        
+        # Optional: Generate and display a plot based on the most recent user query
+        if st.button("Generate Visualization"):
+            plot_type = st.selectbox("Choose plot type", ["scatter", "line", "bar", "histogram"], key="plot_type")
+            x_col = st.selectbox("Select X column", options=[None] + df.columns.tolist(), key="x_col")
+            y_col = st.selectbox("Select Y column", options=[None] + df.columns.tolist(), key="y_col")
+            plot_image = create_plot(df, plot_type, x_col, y_col)
+            if plot_image:
+                st.image(plot_image)
